@@ -36,7 +36,7 @@ Tree::Tree(int argc, char *argv[])
 
     //Port
     p_LinesOut = addOutputPort("lines", "Lines", "Tree");
-    //    p_originSCOut = addOutputPort("vector", "Vector", "Origin SC");
+    p_fieldOut = addOutputPort("field", "Float", "Scalar field");
 
     p_Length = addFloatSliderParam("Length", "Length of tree");
     p_Length->setValue(1.0f, 20, 1.0f);
@@ -64,12 +64,11 @@ int Tree::compute(const char *port)
     float b_scale = p_Scale->getValue();
     int b_deep = p_Deep->getValue();
 
-    coDoLines *line_obj;
-
     int count_vertex = getVertexCount(b_deep);
-    vector<float> x_coord(1), y_coord(1), z_coord(1);
+    vector<float> x_coord(1), y_coord(1), z_coord(1), f(1);
 
     p_Start->getValue(x_coord[0], y_coord[0], z_coord[0]);
+//    f[0] = b_length;
 
     x_coord.push_back(x_coord[0]);
     y_coord.push_back(y_coord[0]);
@@ -81,20 +80,31 @@ int Tree::compute(const char *port)
     lines_data->xyz_coord = {x_coord, y_coord, z_coord};
     lines_data->num_lines = {0};
     lines_data->line_corners = {0, 1};
+    lines_data->f = {0,0};
 
     if (b_deep != 0)
     {
-        glm::mat4 OriginSC = glm::mat4(1.0f);
-
         genTree(lines_data, b_length, b_deep, b_scale, 0, 1, -1);
+//        lines_data->f.push_back((lines_data->f[(lines_data->f).size() - 1]));
+//        lines_data->f.push_back(0.25);
     }
 
     const char *lines_ObjName = p_LinesOut->getObjName();
-    if (lines_ObjName)
+    const char *field_ObjName = p_fieldOut->getObjName();
+    if (lines_ObjName==nullptr || field_ObjName==nullptr){
+        cout << (stderr, "covise failed. Output data check")<<endl;
+        return FAIL;
+    }
+    else // (lines_ObjName)
     {
         cout << "HEEEEEEEEEEEEEEEEEET" << endl;
         cout << count_vertex << " " << (lines_data->line_corners).size() << " " << (lines_data->line_corners).data() << endl;
         cout << (lines_data->num_lines).size() << " " << (lines_data->num_lines).data() << endl;
+//        coDistributedObject** ln = new coDistributedObject* [(lines_data->num_lines).size()+1];
+//        coDistributedObject** field = new coDistributedObject* [(lines_data->f).size()+1];
+
+
+
         coDoLines *line_obj = new coDoLines(lines_ObjName,
                                             count_vertex,
                                             (lines_data->xyz_coord)[0].data(), (lines_data->xyz_coord)[1].data(), (lines_data->xyz_coord)[2].data(),
@@ -102,13 +112,18 @@ int Tree::compute(const char *port)
                                             (lines_data->line_corners).data(),
                                             (lines_data->num_lines).size(),
                                             (lines_data->num_lines).data());
+
+        coDoFloat *fieldObj = new coDoFloat(field_ObjName, (lines_data->f).size(), (lines_data->f).data());
+
         p_LinesOut->setCurrentObject(line_obj);
+        p_fieldOut->setCurrentObject(fieldObj);
+
     }
-    else
-    {
-        cout << "LOG 3DTree: Smth wrongs with output lines data" << endl;
-        return FAIL;
-    }
+//    else(lines_data->f).push_back(current_level);
+//    {
+//        cout << "LOG 3DTree: Smth wrongs with output lines data" << endl;
+//        return FAIL;
+//    }
     return SUCCESS;
 }
 
@@ -243,7 +258,12 @@ void genTree(LinesData *lines_data, float b_length, int b_deep, float b_scale, i
         (lines_data->line_corners).push_back(index_coord);
 
         (lines_data->num_lines).push_back((int)(lines_data->line_corners).size() - 2);
+
+        (lines_data->f).push_back(current_level);
+//        (lines_data->f).push_back(b_length);
     }
+//    lines_data->f.push_back(lines_data->f[(lines_data->f).size() - 1]);
+//    (lines_data->f).push_back(current_level);
 
     ///////////////////////////////////////////////////////////////////
 
@@ -276,6 +296,9 @@ float DegToRad(float deg)
 
     return rad;
 }
+
+void Tree::param(const char *name, bool /*inMapLoading*/)
+{}
 
 Tree::~Tree()
 {

@@ -13,11 +13,11 @@ private:
 
     //  member functions
     virtual int compute(const char *port);
-    //virtual void param(const char *name, bool inMapLoading);
+    virtual void param(const char *name, bool inMapLoading);
     virtual void postInst();
 
     // Ports
-    //coOutputPort *p_vertexOut;
+    coOutputPort *p_fieldOut;
     coOutputPort *p_LinesOut;
 //    coOutputPort *p_originSCOut;
 
@@ -39,6 +39,7 @@ struct LinesData
     vector <int> num_lines;
     vector <int> line_corners;
     vector <vector<float>> xyz_coord;
+    vector <float> f;
 };
 
 void genTree(LinesData* lines_data, float b_length, int b_deep, float b_scale, int current_level, int last_index_pts, int p_prevPts);
