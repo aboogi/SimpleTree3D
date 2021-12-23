@@ -300,8 +300,4 @@ float DegToRad(float deg)
 void Tree::param(const char *name, bool /*inMapLoading*/)
 {}
 
-Tree::~Tree()
-{
-}
-
 MODULE_MAIN(ABA, Tree);

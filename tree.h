@@ -9,7 +9,6 @@ class Tree : public coModule
 {
 private:
     float cx, cy, cz;
-    float sMin, sMax, sVal; // edge length of the cube
 
     //  member functions
     virtual int compute(const char *port);
@@ -19,8 +18,8 @@ private:
     // Ports
     coOutputPort *p_fieldOut;
     coOutputPort *p_LinesOut;
-//    coOutputPort *p_originSCOut;
 
+    // Params
     coFloatVectorParam *p_Start;
     coFloatSliderParam *p_Scale;
     coFloatSliderParam *p_Length;
@@ -29,7 +28,7 @@ private:
 
 public:
     Tree(int argc, char *argv[]);
-    virtual ~Tree();
+    virtual ~Tree() = default;
 };
 
 float DegToRad(float deg);
@@ -42,8 +41,8 @@ struct LinesData
     vector <float> f;
 };
 
-void genTree(LinesData* lines_data, float b_length, int b_deep, float b_scale, int current_level, int last_index_pts, int p_prevPts);
-
+void genTree(LinesData* lines_data, float b_length, int b_deep, float b_scale,
+                int current_level, int last_index_pts, int p_prevPts);
 int getVertexCount(int b_deep);
 
 #endif // TREE_H
